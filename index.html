@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>A Quick Invitation</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center;
+    padding: 16px; font-family: system-ui, sans-serif; color: #25324b;
+    background: linear-gradient(160deg, #dbeafe, #fdf2f8);
+  }
+  main {
+    width: 100%; max-width: 420px; background: #fff; border-radius: 20px;
+    padding: 32px 24px; text-align: center; box-shadow: 0 12px 32px rgba(37,50,75,.15);
+  }
+  h1 { font-size: 1.5rem; line-height: 1.35; margin: 0 0 24px; }
+  h1:focus { outline: none; }
+  p { line-height: 1.5; }
+  button {
+    display: block; width: 100%; margin-top: 12px; padding: 14px; font: inherit; font-weight: 600;
+    border: 2px solid #3b5bdb; border-radius: 12px; background: #fff; color: #3b5bdb; cursor: pointer;
+  }
+  button:hover, button.main { background: #3b5bdb; color: #fff; }
+  button.back { border: 0; background: none; color: #667; font-weight: 400; }
+  [hidden] { display: none; }
+</style>
+</head>
+<body>
+<main>
+  <section id="ask">
+    <h1>Do you want to work with the missionary next week? 😊</h1>
+    <button class="main" data-go="day">Yes</button>
+    <button data-go="no">No</button>
+  </section>
+
+  <section id="day" hidden>
+    <h1>Yay! What day works for you?</h1>
+    <div id="days"></div>
+    <button class="back" data-go="ask">← Back</button>
+  </section>
+
+  <section id="time" hidden>
+    <h1>What time?</h1>
+    <button data-time="1:00 PM">1:00 PM</button>
+    <button data-time="3:00 PM">3:00 PM</button>
+    <button class="back" data-go="day">← Back</button>
+  </section>
+
+  <section id="done" hidden>
+    <h1>Thank you! 🎉</h1>
+    <p id="summary"></p>
+    <p>Tap below to send me your answer.</p>
+    <button class="main" id="send">Send my answer</button>
+    <p id="status" role="status"></p>
+    <button class="back" data-go="day">Change my answer</button>
+  </section>
+
+  <section id="no" hidden>
+    <h1>That's okay! 💙</h1>
+    <p>Thank you for answering. Maybe another time.</p>
+    <button class="back" data-go="ask">← Back</button>
+  </section>
+</main>
+
+<script>
+  // EDIT THE DAYS HERE
+  const days = [
+    "Monday, November 30",
+    "Tuesday, December 1",
+    "Wednesday, December 2",
+    "Thursday, December 3",
+    "Friday, December 4",
+    "Saturday, December 5",
+    "Sunday, December 6"
+  ];
+
+  let day = "", answer = "";
+  const $ = id => document.getElementById(id);
+
+  function show(id) {
+    document.querySelectorAll("section").forEach(s => s.hidden = s.id !== id);
+    $("status").textContent = "";
+  }
+
+  days.forEach(d => {
+    const b = document.createElement("button");
+    b.textContent = d;
+    b.onclick = () => { day = d; show("time"); };
+    $("days").appendChild(b);
+  });
+
+  document.querySelectorAll("[data-go]").forEach(b => b.onclick = () => show(b.dataset.go));
+
+  document.querySelectorAll("[data-time]").forEach(b => b.onclick = () => {
+    const time = b.dataset.time;
+    answer = "Yes, I'll work with the missionary on " + day + " at " + time + ".";
+    $("summary").textContent = "You chose " + day + " at " + time + ".";
+    show("done");
+  });
+
+  $("send").onclick = async () => {
+    try {
+      if (navigator.share) {
+        await navigator.share({ text: answer });
+      } else {
+        await navigator.clipboard.writeText(answer);
+        $("status").textContent = "Copied! Paste it in a message to me.";
+      }
+    } catch (e) {
+      if (e.name !== "AbortError") {
+        $("status").textContent = "Please send me this: " + answer;
+      }
+    }
+  };
+</script>
+</body>
+</html>
